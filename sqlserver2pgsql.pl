@@ -57,6 +57,7 @@ our $pforce_ssl;
 our $stringtype_unspecified;
 our $skip_citext_length_check;
 our $use_identity_column;
+our $ignore_generated_fields;
 
 # Will be set if we detect GIS objects
 our $requires_postgis=0;
@@ -118,6 +119,7 @@ sub parse_conf_file
       'stringtype unspecified'   => 'stringtype_unspecified',
       'skip citext length check' => 'skip_citext_length_check',
       'use identity column'      => 'use_identity_column',
+      'ignore generated fields'  => 'ignore_generated_fields',
    );
 
    # Open the conf file or die
@@ -172,6 +174,7 @@ sub set_default_conf_values
     $stringtype_unspecified=0 unless (defined ($stringtype_unspecified));
     $skip_citext_length_check=0 unless (defined ($skip_citext_length_check));
     $use_identity_column=0 unless (defined ($use_identity_column));
+    $ignore_generated_fields=0 unless (defined ($ignore_generated_fields));
 }
 
 # Process and check the parameters.
@@ -911,6 +914,8 @@ Other options:
     -ignore_errors
             choose to ignore insert errors. If this option is used, inserting
             will be much slower.
+    -ignore_generated_fields (Default 0)
+            choose to ignore generated fields into sql server data queries.
 };
         exit 0;
 }
@@ -987,6 +992,10 @@ sub generate_kettle
                 } (keys %{$refschema->{TABLES}->{$table}->{COLS}}))
 
             {
+                if ($ignore_generated_fields and $refschema->{TABLES}->{$table}->{COLS}->{$col}->{GENERATED})
+                {
+                    next;
+                }
                 my $coldef = sql_convert_column($col,$refschema->{TABLES}->{$table}->{COLS}->{$col}->{TYPE}) . " AS " . format_identifier($col);
                 my $pgcoldef = postgres_convert_column(format_identifier($col),$refschema->{TABLES}->{$table}->{COLS}->{$col}->{TYPE}) . " AS " . format_identifier($col);
                 push @colsdef,($coldef);
@@ -1483,6 +1492,9 @@ sub add_column_to_table
         $objects->{SCHEMAS}->{$schemaname}->{'TABLES'}->{$tablename}->{COLS}
             ->{$colname}->{NOT_NULL} = 0;
     }
+
+     $objects->{SCHEMAS}->{$schemaname}->{'TABLES'}->{$tablename}->{COLS}
+         ->{$colname}->{GENERATED} = 0;
 }
 
 # Reads the dump passed as -f
@@ -1582,6 +1594,9 @@ sub parse_dump
                        $objects->{SCHEMAS}->{$schemaname}->{'TABLES'}->{$tablename}->{COLS}
                           ->{$colname}->{NOT_NULL} = 0;
                     }
+
+                    $objects->{SCHEMAS}->{$schemaname}->{'TABLES'}->{$tablename}->{COLS}
+                        ->{$colname}->{GENERATED} = 1;
 
                     # Show a warning
                     print STDERR
@@ -3287,6 +3302,7 @@ my $options = GetOptions(
 	 "stringtype_unspecified"   => \$stringtype_unspecified,
 	 "skip_citext_length_check" => \$skip_citext_length_check,
 	 "use_identity_column"      => \$use_identity_column
+     "ignore_generated_fields"  => \$ignore_generated_fields
 );
 
 # We don't understand command line or have been asked for usage
