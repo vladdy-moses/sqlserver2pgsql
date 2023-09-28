@@ -612,23 +612,14 @@ sub convert_transactsql_code
    my ($code)=@_;
    #print STDERR "convert: $code\n";
 
-   if ($code =~ /^\((.+?)\)\s+(AND|OR)\s+\((.+?)\)$/) {
-      my ($lhs,$op,$rhs)=($1,$2,$3);
-      $code = "(".convert_transactsql_code("$lhs").") $op (".convert_transactsql_code("$rhs").")";
-   }
-   elsif ($code =~ /^(.+?)\s+(AND|OR)\s+(.+?)$/) {
-      my ($lhs,$op,$rhs)=($1,$2,$3);
-      $code = "(".convert_transactsql_code("$lhs")." $op ".convert_transactsql_code("$rhs").")";
-   }
-   else {
       if ($case_treatment==0) {
 	 $code =~ s/[\[\]]/"/gi; # Bit brutal probably
       }
       else {
-	 $code =~ s/\[(.*)\]/rename_identifier($1)/gie; # Bit brutal probably
+	 $code =~ s/\[(.+?)\]/rename_identifier($1)/gie; # Bit brutal probably
       }
       $code = convert_transact_function($code);
-   }
+
    #print STDERR "to: $code\n\n";
    return $code;
 }
