@@ -299,7 +299,11 @@ sub convert_type
     my $rettype;
     if (defined $types{$sqlstype})
     {
-        if ((defined $sqlqual and defined($unqual{$types{$sqlstype}}))
+        if (defined $sqlqual and $sqlstype eq 'datetimeoffset')
+        {
+            $rettype = "timestamp($sqlqual) with time zone";
+        }
+        elsif ((defined $sqlqual and defined($unqual{$types{$sqlstype}}))
             or not defined $sqlqual)
         {
 	   # This is one of the few types that have to be unqualified (binary type)
@@ -653,6 +657,13 @@ sub store_default_value
 	  $objects->{SCHEMAS}->{$schema}->{TABLES}->{$table}->{COLS}->{$col}->{DEFAULT}->{VALUE}
 	     = $value;
        }
+       $objects->{SCHEMAS}->{$schema}->{TABLES}->{$table}->{COLS}->{$col}->{DEFAULT}->{UNSURE}
+	  = 0;
+    }
+    elsif ($value eq 'sysdatetimeoffset()') # Current timestamp with time zone
+    {
+       $objects->{SCHEMAS}->{$schema}->{TABLES}->{$table}->{COLS}->{$col}->{DEFAULT}->{VALUE}
+	  = 'now()';
        $objects->{SCHEMAS}->{$schema}->{TABLES}->{$table}->{COLS}->{$col}->{DEFAULT}->{UNSURE}
 	  = 0;
     }
