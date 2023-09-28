@@ -495,6 +495,7 @@ sub camel_to_snake
 {
     my ($string)=@_;
     $string =~ s/([[:lower:]])([[:upper:]]+)/$1_\l$2/g;
+    $string =~ s/\$/\_/;
     $string=lc($string);
     return $string;
 }
