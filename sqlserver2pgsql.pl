@@ -3326,7 +3326,7 @@ my $options = GetOptions(
 	 "pforce_ssl"	            => \$pforce_ssl,
 	 "stringtype_unspecified"   => \$stringtype_unspecified,
 	 "skip_citext_length_check" => \$skip_citext_length_check,
-	 "use_identity_column"      => \$use_identity_column
+	 "use_identity_column"      => \$use_identity_column,
      "ignore_generated_fields"  => \$ignore_generated_fields
 );
 
