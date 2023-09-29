@@ -2836,7 +2836,7 @@ sub generate_schema
                 }
                 my @collist=map{format_identifier($_)} @{$constraint->{COLS}};
                 $consdef .=
-                    " UNIQUE (" . join(",", @collist) . ");\n";
+                    " UNIQUE NULLS NOT DISTINCT (" . join(",", @collist) . ") DEFERRABLE INITIALLY IMMEDIATE;\n";
                 print AFTER $consdef;
             }
         }
@@ -2875,7 +2875,10 @@ sub generate_schema
                          join(",", map{format_identifier_cols_index($_)} @{$idxref->{INCLUDE}})
                          . ")";
                    }
-
+                   if ($idxref->{UNIQUE})
+                   {
+                       $idxdef .= " NULLS NOT DISTINCT";
+                   }
                    if (not defined $idxref->{WHERE} and not defined $idxref->{DISABLE}) {
                       $idxdef .= ";\n";
                       print AFTER $idxdef;
